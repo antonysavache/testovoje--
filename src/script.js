@@ -147,8 +147,8 @@ function theActionWithStuf(firstObj, actionObj){
 
 const firstobj = Object.keys(firstObj);
 const secondobj = Object.keys(actionObj);
-delete firstobj['fruits'];
-delete secondobj['action'];
+firstobj.splice(0,1);
+secondobj.splice(0,1);
 console.log(firstobj,secondobj)
   
   if (actionObj.action === 'взял') {
