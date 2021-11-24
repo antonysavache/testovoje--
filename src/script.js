@@ -126,24 +126,8 @@ const ourFirstInput = document.querySelector('.js-first');
 const ourActionInput = document.querySelector('.js-action');
 const mainBtn = document.querySelector('.js-btn');
 const actionsArray = ['съел', 'положил', 'взял'];
-const divResult = document.querySelector('.js-inner-result')
-const peshka = document.createElement('p')
-
-// ourFirstInput.addEventListener('input', debounce(inputFirstValue, 300));
-// ourActionInput.addEventListener('input', debounce(inputActionValue, 300));
-
-// function addToObj(){
-//   for (let i = 0; i < ourFirstInputValue.length; i += 1) {
-//     if (parseInt(ourFirstInputValue[i])) {
-//       arrWithAttributes.push(parseInt(ourFirstInputValue[i]));
-//       arrWithAttributes.push(ourFirstInputValue[i + 1]);
-//       firstObj[ourFirstInputValue[i + 1].slice(0, 4)] = ourFirstInputValue[i];
-//       console.log(firstObj)
-//       console.log(arrWithAttributes);
-//       ourFirstObj = firstObj;
-//     }
-//   }
-// }
+const divResult = document.querySelector('.js-inner-result');
+const peshka = document.createElement('p');
 
 // эта функция смотрит что было на столе и записывает в массив отфиль-
 //трованное значение
@@ -165,9 +149,9 @@ function inputFirstValue() {
       firstObj.fruits = numOfFruits;
       firstObj[ourFirstInputValue[i + 1].slice(0, 5)] = parseInt(ourFirstInputValue[i]);
       console.log('объект начального состояния', firstObj);
-      theActionWithStuf(firstObj, actob);
     }
   }
+  theActionWithStuf(firstObj, actob);
 }
 
 //эта функция смотрит что сделал мальчик
@@ -175,25 +159,24 @@ function inputActionValue() {
   const ourActionInputValue = ourActionInput.value.split(' ');
   let arrWithAttributes = [];
   let actionObj = {};
+  let numOfFruits = 0;
   for (let i = 0; i < ourActionInputValue.length; i += 1) {
     if (actionsArray.includes(ourActionInputValue[i])) {
       actionObj.action = ourActionInputValue[i];
       for (let i = 0; i < ourActionInputValue.length; i += 1) {
         if (parseInt(ourActionInputValue[i])) {
-          arrWithAttributes.push(parseInt(ourActionInputValue[i]));
-          arrWithAttributes.push(ourActionInputValue[i + 1]);
+          if (FRUITS_ARR.includes(ourActionInputValue[i + 1].slice(0, 5))) {
+            numOfFruits += parseInt(ourActionInputValue[i]);
+          }
+          actionObj.fruits = numOfFruits;
           actionObj[ourActionInputValue[i + 1].slice(0, 5)] = parseInt(ourActionInputValue[i]);
           console.log('объект действий', actionObj);
-          // console.log(arrWithAttributes);
-          // ourFirstObj = firstObj;
         }
       }
     }
   }
   return actionObj;
 }
-
-
 
 function theActionWithStuf(firstObj, actionObj) {
   console.log(actionObj.action);
@@ -202,46 +185,72 @@ function theActionWithStuf(firstObj, actionObj) {
     return;
   }
 
-  if(actionObj.action === 'взял'){
-    take(firstObj, actionObj)
-  } else if (actionObj.action === 'положил'){
-    put(firstObj, actionObj)
+  if (actionObj.action === 'взял') {
+    take(firstObj, actionObj);
+  } else if (actionObj.action === 'положил') {
+    put(firstObj, actionObj);
   }
-//парсим массивы для проверки все ли есть, что хочет взять мальчик
-
+  //парсим массивы для проверки все ли есть, что хочет взять мальчик
 }
 
-function take(firstObj, actionObj){
+function take(firstObj, actionObj) {
   const firstobj = Object.keys(firstObj);
   const secondobj = Object.keys(actionObj);
   firstobj.splice(0, 1);
-  secondobj.splice(0, 1);
+  secondobj.splice(0, 2);
   for (const iterator of secondobj) {
-    if(!firstobj.includes(iterator)){
-      return console.log(`${iterator} на столе не лежал`)
+    if (!firstobj.includes(iterator)) {
+      return console.log(`${iterator} на столе не лежал`);
     }
-  
-    if(parseInt(firstObj[iterator]) > parseInt(actionObj[iterator]))
-    {
-      divResult.insertAdjacentHTML('beforeend',`<p>на столе осталось ${parseInt(firstObj[iterator]) - parseInt(actionObj[iterator])} от ${iterator}</p> `);
-      console.log(`на столе осталось ${parseInt(firstObj[iterator]) - parseInt(actionObj[iterator])} от ${iterator}`)
+
+    if (parseInt(firstObj[iterator]) > parseInt(actionObj[iterator])) {
+      divResult.insertAdjacentHTML(
+        'beforeend',
+        `<p>на столе осталось ${
+          parseInt(firstObj[iterator]) - parseInt(actionObj[iterator])
+        } от ${iterator}</p> `,
+      );
+      console.log(
+        `на столе осталось ${
+          parseInt(firstObj[iterator]) - parseInt(actionObj[iterator])
+        } от ${iterator}`,
+      );
     } else {
       divResult.innerHTML = `<p>не хватает фрукта ${iterator}</p> `;
       console.log(`не хватает ${iterator}`);
     }
-    
   }
 }
 
-function put(firstObj, actionObj){
+function put(firstObj, actionObj) {
+  let newObjAfterPut = {};
   const firstobj = Object.keys(firstObj);
   const secondobj = Object.keys(actionObj);
   firstobj.splice(0, 1);
-  secondobj.splice(0, 1);
-
+  secondobj.splice(0, 2);
   for (const iterator of firstobj) {
-    firstObj[iterator] += parseInt(actionObj[iterator])
+    if (!actionObj[iterator]) {
+      newObjAfterPut[iterator] = firstObj[iterator];
+    } else {
+      newObjAfterPut[iterator] = firstObj[iterator] + actionObj[iterator];
+    }
   }
+
+  for (const iterator of secondobj) {
+    if (!firstObj[iterator]) {
+      newObjAfterPut[iterator] = actionObj[iterator];
+    }
+  }
+
+  console.log(newObjAfterPut);
+  for (const key in newObjAfterPut) {
+    if (newObjAfterPut.hasOwnProperty.call(newObjAfterPut, key)) {
+      const element = newObjAfterPut[key];
+      divResult.insertAdjacentHTML('beforeend', `<p>на столе стало ${key} ${element} `);
+    }
+  }
+  return newObjAfterPut;
 }
 
 mainBtn.addEventListener('click', inputFirstValue);
+// console.log(put({fruits: 6, банан: 2, яблок: 4, гвозд: 3}, {action: 'положил', яблок: 3, банан: 4, гвозд: 4}))
